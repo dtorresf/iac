@@ -1,5 +1,6 @@
 import pulumi
 from pulumi_aws import ec2, get_availability_zones, rds, elasticache
+from pulumi_aws.ec2 import route_table
 
 config = pulumi.Config();
 environment = config.require('environment');
@@ -42,85 +43,105 @@ public_route_table = ec2.RouteTable(
 )
 
 #Creating subnets
-
 subnet_ids = []
-i=1
-
 #Public Subnets
-
-for cidr in public_subnet_cidr:
+for index, cidr in enumerate(public_subnet_cidr, start=1):
     vpc_public_subnet = ec2.Subnet(
-        f'{environment}-public-{i}',
+        f'{environment}-public-{index}',
         assign_ipv6_address_on_creation=False,
         vpc_id=vpc.id,
         map_public_ip_on_launch=True,
-        cidr_block=public_subnet_cidr[i-1],
-        availability_zone=availability_zones[i-1],
+        cidr_block=cidr,
+        availability_zone=availability_zones[index-1],
         tags={
-            'Name': f'{environment}-pub{i}',
+            'Name': f'{environment}-public{index}',
             'kubernetes.io/role/elb': '1',
         },
     )
     ec2.RouteTableAssociation(
-        f'{environment}-pub{i}',
+        f'{environment}-public{index}',
         route_table_id=public_route_table.id,
         subnet_id=vpc_public_subnet.id,
     )
     subnet_ids.append(vpc_public_subnet.id)
-    i=i+1
 
 #Private Subnet 
 
-nat_eip = ec2.Eip(f'{environment}',
+nat_eip = ec2.Eip(f'{environment}-public1',
     vpc=True,
     tags={
-        'Name':f'{environment}',
+        'Name':f'{environment}-public1',
+    },
+    )
+nat_eip = ec2.Eip(f'{environment}-public2',
+    vpc=True,
+    tags={
+        'Name':f'{environment}-public2',
     },
     )
 
-ngw = ec2.NatGateway(f'{environment}',
+ngw_1 = ec2.NatGateway(f'{environment}-public1',
     allocation_id=nat_eip.id,
     subnet_id=subnet_ids[0],
     tags={
-        'Name': f'{environment}',
+        'Name': f'{environment}-public1',
+    },
+    )
+ngw_2 = ec2.NatGateway(f'{environment}-public2',
+    allocation_id=nat_eip.id,
+    subnet_id=subnet_ids[0],
+    tags={
+        'Name': f'{environment}-public2',
     },
     )
 
-private_route_table = ec2.RouteTable(
-    f'{environment}-route-private',
+#Route tables
+
+private_route_table_1 = ec2.RouteTable(
+    f'{environment}-route-private1',
     vpc_id=vpc.id,
     routes=[ec2.RouteTableRouteArgs(
         cidr_block='0.0.0.0/0',
-        gateway_id=ngw.id,
+        gateway_id=ngw_1.id,
     )],
     tags={
-        'Name': f'{environment}-private',
+        'Name': f'{environment}-private1',
     },
 )
 
+private_route_table_2 = ec2.RouteTable(
+    f'{environment}-route-private2',
+    vpc_id=vpc.id,
+    routes=[ec2.RouteTableRouteArgs(
+        cidr_block='0.0.0.0/0',
+        gateway_id=ngw_2.id,
+    )],
+    tags={
+        'Name': f'{environment}-private2',
+    },
+)
+
+route_tables=[private_route_table_1,private_route_table_2]
 #Subnet identifiers
 
-i=1
-
-for cidr in private_subnet_cidr:
+for index,cidr in enumerate(private_subnet_cidr, start=1):
     vpc_private_subnet = ec2.Subnet(
-        f'{environment}-private-{i}',
+        f'{environment}-private-{index}',
         assign_ipv6_address_on_creation=False,
         vpc_id=vpc.id,
-        cidr_block=private_subnet_cidr[i-1],
-        availability_zone=availability_zones[i-1],
+        cidr_block=cidr,
+        availability_zone=availability_zones[index-1],
         tags={
-            'Name': f'{environment}-priv{i}',
+            'Name': f'{environment}-priv{index}',
             'kubernetes.io/role/internal-elb': '1'
         },
     )
     ec2.RouteTableAssociation(
         f'{environment}-priv{i}',
-        route_table_id=private_route_table.id,
+        route_table_id=route_tables[index-1].id,
         subnet_id=vpc_private_subnet.id,
     )
     subnet_ids.append(vpc_private_subnet.id)
-    i=i+1
 
 ## Security Group
 

@@ -11,6 +11,8 @@ instance_size = config.require('instance-size');
 eks_service_role = config.require('eks-service-role');
 node_instance_role = config.require('node-instance-role');
 
+#Create EKS required Roles
+
 eks_cluster = eks.Cluster(
     f'{environment}',
     role_arn=eks_service_role,
