@@ -8,12 +8,14 @@ import networking
 config = pulumi.Config();
 environment = config.require('environment');
 instance_size = config.require('instance-size');
+eks_service_role = config.require('eks-service-role');
+node_instance_role = config.require('node-instance-role');
 
 eks_cluster = eks.Cluster(
-    f'tenon-{environment}',
-    role_arn='arn:aws:iam::870743714739:role/eksServiceRole',
+    f'{environment}',
+    role_arn=eks_service_role,
     tags={
-        'Name': f'tenon-{environment}',
+        'Name': f'{environment}',
     },
     vpc_config=eks.ClusterVpcConfigArgs(
         public_access_cidrs=['0.0.0.0/0'],
@@ -23,17 +25,17 @@ eks_cluster = eks.Cluster(
 )
 
 eks_node_group = eks.NodeGroup(
-    f'tenon-{environment}-wng1',
+    f'{environment}-wng1',
     cluster_name=eks_cluster.name, 
-    node_group_name=f'tenon-{environment}-wng1',
-    node_role_arn='arn:aws:iam::870743714739:role/NodeInstanceRole',
+    node_group_name=f'{environment}-wng1',
+    node_role_arn=node_instance_role,
     subnet_ids=networking.subnet_ids,
     instance_types=[instance_size],
     remote_access=eks.NodeGroupRemoteAccessArgs(
-        ec2_ssh_key='tenon-ecs-key',
+        ec2_ssh_key='ecs-key',
     ),
     tags={
-        'Name': f'tenon-{environment}-wng1',
+        'Name': f'{environment}-wng1',
     },
     scaling_config=eks.NodeGroupScalingConfigArgs(
         desired_size=3,
