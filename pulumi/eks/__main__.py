@@ -43,8 +43,8 @@ eks_node_group = eks.NodeGroup(
         'Name': f'{environment}-wng1',
     },
     scaling_config=eks.NodeGroupScalingConfigArgs(
-        desired_size=node_pool_desired_size,
-        max_size=node_pool_min_size,
-        min_size=node_pool_max_size,
+        desired_size=1,
+        max_size=1,
+        min_size=1,
     ),
 )
