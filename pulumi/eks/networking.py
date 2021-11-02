@@ -67,13 +67,13 @@ for index, cidr in enumerate(public_subnet_cidr, start=1):
 
 #Private Subnet 
 
-nat_eip = ec2.Eip(f'{environment}-public1',
+nat_eip_1 = ec2.Eip(f'{environment}-public1',
     vpc=True,
     tags={
         'Name':f'{environment}-public1',
     },
     )
-nat_eip = ec2.Eip(f'{environment}-public2',
+nat_eip_2 = ec2.Eip(f'{environment}-public2',
     vpc=True,
     tags={
         'Name':f'{environment}-public2',
@@ -81,15 +81,15 @@ nat_eip = ec2.Eip(f'{environment}-public2',
     )
 
 ngw_1 = ec2.NatGateway(f'{environment}-public1',
-    allocation_id=nat_eip.id,
+    allocation_id=nat_eip_1.id,
     subnet_id=subnet_ids[0],
     tags={
         'Name': f'{environment}-public1',
     },
     )
 ngw_2 = ec2.NatGateway(f'{environment}-public2',
-    allocation_id=nat_eip.id,
-    subnet_id=subnet_ids[0],
+    allocation_id=nat_eip_2.id,
+    subnet_id=subnet_ids[1],
     tags={
         'Name': f'{environment}-public2',
     },
@@ -137,7 +137,7 @@ for index,cidr in enumerate(private_subnet_cidr, start=1):
         },
     )
     ec2.RouteTableAssociation(
-        f'{environment}-priv{i}',
+        f'{environment}-priv{index}',
         route_table_id=route_tables[index-1].id,
         subnet_id=vpc_private_subnet.id,
     )
@@ -178,4 +178,3 @@ node_security_group = ec2.SecurityGroup(
         'Name': f'{environment}-wng1-sg',
     }
 )
-

@@ -128,3 +128,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+pulumi/eks/Pulumi.telco-onap.yaml

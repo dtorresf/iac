@@ -1,0 +1,21 @@
+config:
+  aws:profile: telco-onap
+  aws:region: us-east-2
+  eks-cluster:availability_zones:
+    id:
+    - us-east-2a
+    - us-east-2b
+  eks-cluster:cidrblock: 10.0.0.0/16
+  eks-cluster:environment: onap
+  eks-cluster:instance-size: t3.small
+  eks-cluster:pool-desired-size: "3"
+  eks-cluster:pool-max-size: "3"
+  eks-cluster:pool-min-size: "3"
+  eks-cluster:private-subnet:
+    cidr:
+    - 10.0.3.0/24
+    - 10.0.4.0/24
+  eks-cluster:public-subnet:
+    cidr:
+    - 10.0.1.0/24
+    - 10.0.2.0/24
