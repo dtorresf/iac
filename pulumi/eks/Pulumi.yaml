@@ -1,4 +1,4 @@
-name: EKS cluster creationg
+name: eks-cluster
 runtime:
   name: python
 description: IaC code to create new EKS cluster on AWS

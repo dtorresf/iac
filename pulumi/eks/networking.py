@@ -178,4 +178,3 @@ node_security_group = ec2.SecurityGroup(
         'Name': f'{environment}-wng1-sg',
     }
 )
-

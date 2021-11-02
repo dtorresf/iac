@@ -10,6 +10,9 @@ environment = config.require('environment');
 instance_size = config.require('instance-size');
 eks_service_role = config.require('eks-service-role');
 node_instance_role = config.require('node-instance-role');
+node_pool_desired_size = config.require('pool-desired-size');
+node_pool_min_size = config.require('pool-min-size');
+node_pool_max_size = config.require('pool-max-size');
 
 #Create EKS required Roles
 
@@ -40,8 +43,8 @@ eks_node_group = eks.NodeGroup(
         'Name': f'{environment}-wng1',
     },
     scaling_config=eks.NodeGroupScalingConfigArgs(
-        desired_size=3,
-        max_size=6,
-        min_size=2,
+        desired_size=node_pool_desired_size,
+        max_size=node_pool_min_size,
+        min_size=node_pool_max_size,
     ),
 )
