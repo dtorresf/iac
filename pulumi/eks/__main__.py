@@ -15,12 +15,14 @@ node_pool_min_size = config.require('pool-min-size');
 node_pool_max_size = config.require('pool-max-size');
 node_ssh_key = config.require('node-ssh-key')
 eks_node_disk_size = config.require('eks-node-disk-size')
+eks_version = config.require('eks-version')
 
 #Create EKS required Roles
 
 eks_cluster = eks.Cluster(
     f'{environment}',
     role_arn=eks_service_role,
+    version=eks_version,
     tags={
         'Name': f'{environment}',
     },
@@ -47,7 +49,7 @@ eks_node_group = eks.NodeGroup(
     },
     scaling_config=eks.NodeGroupScalingConfigArgs(
         desired_size=int(node_pool_desired_size),
-        max_size=int(node_pool_min_size),
-        min_size=int(node_pool_max_size),
+        max_size=int(node_pool_max_size),
+        min_size=int(node_pool_min_size),
     ),
 )

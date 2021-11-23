@@ -132,12 +132,12 @@ for index,cidr in enumerate(private_subnet_cidr, start=1):
         cidr_block=cidr,
         availability_zone=availability_zones[index-1],
         tags={
-            'Name': f'{environment}-priv{index}',
+            'Name': f'{environment}-private{index}',
             'kubernetes.io/role/internal-elb': '1'
         },
     )
     ec2.RouteTableAssociation(
-        f'{environment}-priv{index}',
+        f'{environment}-private{index}',
         route_table_id=route_tables[index-1].id,
         subnet_id=vpc_private_subnet.id,
     )
